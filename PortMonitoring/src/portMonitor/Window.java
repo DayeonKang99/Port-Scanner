@@ -22,7 +22,7 @@ public class Window extends JFrame{
 	JLabel text;
 	int count=0;
 
-	// 포트 모니터링 정보 저장을 위한 HashMap
+	// HashMap for saving port scanning information
 	HashMap<Integer,Vector<String>> dataSet = new HashMap<Integer,Vector<String>>();
 
 	public static Window Instance;
@@ -32,63 +32,63 @@ public class Window extends JFrame{
 		Instance = this;
 		
 		setTitle("Port Monitoring System");
-		// 상, 중, 하 부분으로 나누고 각 부분에 부착할 패널 생성
+		// create panel to attach
 		JPanel panel1 = new JPanel();
 		JPanel panel2 = new JPanel();
 		JPanel panel3 = new JPanel();
 
 
-		// 패널1 (상 부분)에 들어갈 컴포넌트 생성
-		String protocol[] = {"프로토콜 선택", "TCP"};
-		String time[] = {"갱신주기 선택 (s)", "갱신 안함", "5", "10", "15", "20", "25", "30"};
-		proto_combo = new JComboBox<String>(protocol);  // 프로토콜 선택을 위한 콤보 박스 생성
-		time_combo = new JComboBox<String>(time);		// 갱신 주기 선택을 위한 콤보 박스 생성
-		inputIP = new JTextField(16);					// 모니터링할 ip를 입력받기 위한 텍스트필드 생성
-		inputIP.setText("모니터링 하고자 하는 IP를 입력하세요");
-		btn_start = new JButton("START");				// 포트 스캔 시작을 위한 버튼 생성
+		// create component for panel1
+		String protocol[] = {"Select Protocol", "TCP"};
+		String time[] = {"Renewal Cycle (s)", "Do not renew", "5", "10", "15", "20", "25", "30"};
+		proto_combo = new JComboBox<String>(protocol);  
+		time_combo = new JComboBox<String>(time);		
+		inputIP = new JTextField(16);					
+		inputIP.setText("Enter the IP you want to scan");
+		btn_start = new JButton("START");				
 		btn_start.addActionListener(new StartAction());
 
-		// panel1에 컴포넌트 부착
+		// attach component to panel1
 		panel1.add(proto_combo);
 		panel1.add(inputIP);
 		panel1.add(btn_start);
 		panel1.add(time_combo);
 
 
-		// panel2 (중 부분)에 들어갈 컴포넌트 생성
-		column = new Vector<String>();	// table 맨 위 열에 들어갈 제목 저장을 위한 Vector 
-		column.add("Port 번호");
-		column.add("현재 상태");
-		column.add("활성화 시간");
-		column.add("마지막 확인 시간");
+		// create component for panel2 
+		column = new Vector<String>();	// Vector for saving titles to be placed in the top column of table
+		column.add("Port number");
+		column.add("Current Status");
+		column.add("Activation Time");
+		column.add("Last Confirmation Time");
 
-		// 스캔 정보 출력을 위한 테이블 생성 
+		// table for outputting scan information
 		tableview = new JTable();				
 		model = new DefaultTableModel(0, 0);	
 		model.setColumnIdentifiers(column);
 		tableview.setModel(model);
-		// 테이블에 스크롤 연결 
+		// connecting scrolls to a table 
 		scroll = new JScrollPane(tableview);
 		
-		// panel2에 컴포넌트 부착
+		// attach component to panel2
 		panel2.add(scroll, BorderLayout.CENTER);
 		
 
-		// panel3 (하 부분)에 들어갈 컴포넌트 생성
-		btn_csv = new JButton("CSV 파일로 저장");	// csv 파일에 정보를 저장하기 위한 버튼 생성 
-		text = new JLabel("마지막 업데이트 시간");	// 마지막 업데이트 시간 출력을 위한 텍스트 필드 생성 
+		// create component for panel3 
+		btn_csv = new JButton("Save as .csv File");	
+		text = new JLabel("Last Update Time");	 
 		updateTime = new JTextField(20);
 		updateTime.setText("HH:mm:ss");
 		updateTime.setEnabled(false);
 		btn_csv.addActionListener(new WriteCSV());
 
-		// panel3에 컴포넌트 부착
+		// attach component to panel3
 		panel3.add(btn_csv);
 		panel3.add(text);
 		panel3.add(updateTime);
 
 
-		// JFrame에 패널 부착
+		// attach panels to JFrame
 		add(panel1, BorderLayout.NORTH);
 		add(panel2, BorderLayout.CENTER);
 		add(panel3, BorderLayout.SOUTH);
@@ -100,7 +100,7 @@ public class Window extends JFrame{
 	}
 
 
-	// START 버튼을 눌렀을 때 리스너
+	// Listener when START button is pressed
 	class StartAction implements ActionListener {
 
 		private ArrayList<Thread> activeThread;
@@ -114,7 +114,7 @@ public class Window extends JFrame{
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
 			
-			// START 버튼을 누르면 STOP으로 바뀌고 ip 입력을 못받으며 콤보박스가 모두 비활성화
+			// press START button to switch to STOP, not receiving ip input, all combo boxes disabled
 			if (btn_start.getText().equals("START"))
 			{
 				btn_start.setText("STOP");
@@ -124,21 +124,21 @@ public class Window extends JFrame{
 
 				activeThread.clear();
 
-				// START 버튼을 누르면 스레드 생성 후 포트 모니터링 
+				// press START button to create thread and scan port
 				Thread t = new Thread(new PortScanner(1, 9999));
 				t.start();
 
 				activeThread.add(t);
 			}
 			else {
-				// STOP 버튼을 누르면 스레드 중지 
+				// STOP button for stoping thread
 				for (Thread t : activeThread)
 				{
 					t.interrupt();
 				}
 				activeThread.clear();
 
-				// STOP 버튼을 누르면 START 버튼으로 바뀌고 텍스트 필드, 콤보박스 활성화 
+				// press STOP button to switch to START button, and enable text field and combo box
 				btn_start.setText("START");
 				inputIP.setEnabled(true);
 				proto_combo.setEnabled(true);
@@ -147,7 +147,7 @@ public class Window extends JFrame{
 		}
 	}
 
-	// CSV 파일로 저장 버튼을 눌렀을 때 리스너
+	// Listener when the Save as .csv File button is pressed
 	class WriteCSV implements ActionListener {
 		Writer writer = null;
 
@@ -155,7 +155,7 @@ public class Window extends JFrame{
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
 			
-			// csv 파일로 포트 모니터링 정보 저장 
+			// saving port scan information as .csv file
 			try {
 				writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("Port Monitor.csv"), "EUC-KR"));
 				StringBuffer bufferHeader = new StringBuffer();
@@ -180,8 +180,8 @@ public class Window extends JFrame{
 				e1.printStackTrace();
 			}
 
-			// 저장되었다는 팝업창 띄우기
-			JOptionPane.showMessageDialog(null, "포트 모니터링 정보가 CSV 파일로 저장되었습니다.");
+			// Pop-up window that says saved
+			JOptionPane.showMessageDialog(null, "Port scan information has been saved as a .csv file");
 			}
 	}
 
