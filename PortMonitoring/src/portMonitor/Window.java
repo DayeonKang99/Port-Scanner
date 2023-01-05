@@ -60,7 +60,7 @@ public class Window extends JFrame{
 		column.add("Port number");
 		column.add("Current Status");
 		column.add("Activation Time");
-		column.add("Last Confirmation Time");
+		column.add("Last Verification Time");
 
 		// table for outputting scan information
 		tableview = new JTable();				
