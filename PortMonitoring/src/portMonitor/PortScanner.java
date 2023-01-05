@@ -12,7 +12,6 @@ public class PortScanner implements Runnable{
 	private int startPort;
 	private int endPort;
 
-	// 생성자 
 	public PortScanner(int start, int end) {
 		
 		startPort = start;
@@ -22,14 +21,14 @@ public class PortScanner implements Runnable{
 	int time[] = {0, 0, 5, 10, 15, 20, 25, 30};
 
 	
-	// 테이블에 포트 모니터링한 정보를 쓰는 메소드
+	// method for writing port scan information 
 	private boolean addOrUpdateRow(Vector<String> data){
 		
 		String port = data.get(0);
 
 		synchronized (Window.Instance.model)
 		{
-			// 포트 정보가 이미 테이블에 있으면 update
+			// if port information already exists, then update
 			for (int i = 0; i < Window.Instance.model.getRowCount(); i++)
 			{
 				if (Window.Instance.model.getValueAt(i, 0).equals(port) == false)
@@ -41,7 +40,7 @@ public class PortScanner implements Runnable{
 				return false;
 			}
 
-			// 포트 정보가 테이블에 없으면 add 
+			// if port information doesn't exist, then add 
 			System.out.println("ADD ROW: " + port);
 			Window.Instance.model.addRow(data);
 		}
@@ -49,14 +48,14 @@ public class PortScanner implements Runnable{
 	}
 
 	@Override
-	// 스레드 실행을 위한 메소드
+	// method for thread
 	public void run()
 	{
 		// TODO Auto-generated method stub
-		String ip = Window.Instance.inputIP.getText();				// Window에서 입력받은 ip를 가져옴 
+		String ip = Window.Instance.inputIP.getText();				 
 
-		Vector<String> info = null;									// 포트 스캔한 정보를 Vector에 저장  
-		SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");	// 시간 저장을 위한 format
+		Vector<String> info = null;									
+		SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");	
 
 		try {
 			do {
@@ -66,10 +65,10 @@ public class PortScanner implements Runnable{
 
 					synchronized (Window.Instance.updateTime)
 					{
-						Window.Instance.updateTime.setText("SCANNING..." + i);	// 스캐닝 중일 떄 출력하는 텍스트 
+						Window.Instance.updateTime.setText("SCANNING..." + i);	 
 					}
 
-					// 해당되는 포트에 접속 가능한지 확인 
+					// verify that the appropriate port is reachable
 					try {
 						Socket socket = new Socket();
 						socket.connect(new InetSocketAddress(ip, i), 200);
@@ -78,7 +77,7 @@ public class PortScanner implements Runnable{
 							info = Window.Instance.dataSet.get(i);
 						else
 						{
-							// info에 포트 번호, 현재 상태, 활성화 시간, 마지막 확인 시간에 대한 정보 저장 
+							// store information about port number, current status, activation time, and last verification time in info 
 							info = new Vector<String>();
 
 							info.setSize(4);
@@ -98,7 +97,7 @@ public class PortScanner implements Runnable{
 
 						if (Window.Instance.dataSet.containsKey(i) == false)
 							continue;
-						// 포트가 닫혀있을 때 정보 저장 
+						// save information when a port is closed
 						else
 						{
 							info = Window.Instance.dataSet.get(i);
@@ -109,26 +108,26 @@ public class PortScanner implements Runnable{
 					addOrUpdateRow(info);
 				}
 
-				Window.Instance.updateTime.setText(format.format(new Date()));	// 스캔을 완료하고 마지막 업데이트 시간 텍스트로 출력 
-				// 갱신 주기 저장 
+				Window.Instance.updateTime.setText(format.format(new Date()));	// complete the scan and print to the last update time
+				// save Renewal Cycle 
 				int retryTime = time[Window.Instance.time_combo.getSelectedIndex()];
 
 				if (retryTime == 0)
 					throw new InterruptedException();
 
-				// 갱신 주기가 설정되어 있으면 스레드 sleep 후 다시 스캔 
+				// Rescan after thread sleep if update Renewal Cycle is set
 				try {
 					Thread.sleep(retryTime * 1000);
 				} catch (InterruptedException e) {
 					return;
 				}
 			} while (true);
-		} catch (Exception e)	// 스레드 종료 
+		} catch (Exception e)	// terminate thread 
 		{
 			System.out.println("STOP: " + e);
 			synchronized (Window.Instance)
 			{
-				// 스레드 종료하면 자동으로 START 버튼으로 바뀌고 텍스트 필드와 콤보박스 활성화 
+				// automatically changes to START button when thread is terminated, and enables text fields and combo boxes
 				Window.Instance.btn_start.setText("START");
 				Window.Instance.inputIP.setEnabled(true);
 				Window.Instance.proto_combo.setEnabled(true);
@@ -139,7 +138,7 @@ public class PortScanner implements Runnable{
 		{
 			synchronized (Window.Instance.updateTime)
 			{
-				Window.Instance.updateTime.setText(format.format(new Date()));	// 스레드 종료 시 마지막 업데이트 시간 텍스트로 출력 
+				Window.Instance.updateTime.setText(format.format(new Date()));	// print last update time to text when thread is terminated 
 			}
 		}
 	}
